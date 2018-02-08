@@ -18,6 +18,17 @@ class Craft(object):
                (self.output,)
 
 
+    @staticmethod
+    def from_dict(data):
+
+        if "type" in data:
+            r = Recipe(data["recipe"], data["type"])
+        else:
+            r = Recipe(data["recipe"])
+
+        c = Craft(data["output"], r)
+        return c
+
 class Recipe(object):
 
     def __init__(self, craft_items, craft_type="shaped"):

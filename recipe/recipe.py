@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 
+from . import helpers
+
+
 class Craft(object):
 
     def __init__(self, output, recipe):
@@ -20,28 +23,30 @@ class Craft(object):
 
     @staticmethod
     def from_dict(data):
-
-        if "type" in data:
-            r = Recipe(data["recipe"], data["type"])
-        else:
-            r = Recipe(data["recipe"])
-
+        r = Recipe.from_dict(data)
         c = Craft(data["output"], r)
         return c
+
 
 class Recipe(object):
 
     def __init__(self, craft_items, craft_type="shaped"):
 
         if type(craft_items) is not list:
-            raise ValueError("craft_items must by a list")
+            raise ValueError("craft_items must be a list")
 
         if type(craft_type) is not str:
             raise ValueError("craft_type must be a str")
 
-        self.craft_items = craft_items 
         self.craft_type = craft_type
+        self.craft_items = craft_items 
 
     def __repr__(self):
         return "<Recipe craft_type=%s>" % \
                (self.craft_type,)
+
+    @staticmethod
+    def from_dict(data):
+
+        if not "recipe" in data:
+            raise ValueError("data must include recipe")

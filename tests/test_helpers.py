@@ -42,21 +42,21 @@ class TestHelpers(unittest.TestCase):
             "xdefault:woodtest:bowl")
 
         self.assertEqual(helpers.reduce_recipe_collection(
-            merge, [["1","2"], ["3","4"], ["5","6","7"]], "x"),
+            merge, [["1", "2"], ["3", "4"], ["5", "6", "7"]], "x"),
             "x1234567")
 
     def test_items_match(self):
         """We should detect potential item conflicts"""
         woods = {"default:pine_wood", "default:jungle_wood", "default:wood"}
         metals = {"default:steel_ingot", "default:bronze_ingot",
-                   "default:gold_ingot"}
+                  "default:gold_ingot"}
         everything = woods.union(metals)
 
         self.assertTrue(helpers.items_match("default:steel_ingot",
-                                               "default:steel_ingot"))
+                                            "default:steel_ingot"))
         self.assertFalse(helpers.items_match("default:steel_ingot",
-                                                "default:bronze_ingot"))
-        
+                                             "default:bronze_ingot"))
+
         self.assertTrue(helpers.items_match("default:steel_ingot", metals))
         self.assertTrue(helpers.items_match(metals, "default:steel_ingot"))
 

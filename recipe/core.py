@@ -11,7 +11,7 @@ purposes.
 Examples: "default:steel_ingot" or "default:diamond"
 
 A GroupName is a string representation of a named collection of Minetest
-Craftitems. 
+Craftitems.
 The string must lead with the characters "group:"
 Examples: "group:stick" or "group:wood"
 
@@ -29,7 +29,7 @@ A RecipeCollection may be:
       [[Item, Item, Item], [Item, Item, Item], [Item, Item, Item]]
 
 A CraftType is a string representing the "kind" of a given Recipe, per the
-Minetest game. 
+Minetest game.
 "shaped", "unshaped", "fuel", and "cooking" are standard.
 "shaped" is the default.
 Other CraftType strings may be introduced by Minetest mods.
@@ -39,6 +39,7 @@ Objects
 """
 
 from . import helpers
+
 
 class Recipe(object):
 
@@ -52,7 +53,9 @@ class Recipe(object):
         self.items = recipe_collection
 
     def ingredients(self, update=False):
-        """Return a flat list of the Items (excluding None) for this Recipe."""
+        """Return a flat list of the Items (excluding None) for this Recipe.
+        Side effects: Cache the result and set self._sortable
+        """
         def redux(base, item):
 
             if type(item) is set:
@@ -65,7 +68,7 @@ class Recipe(object):
 
         if update or not hasattr(self, "_ingredients"):
             ingredients = helpers.reduce_recipe_collection(
-                    redux, self.items, {"craft_items": [], "groups": []})
+                redux, self.items, {"craft_items": [], "groups": []})
             ingredients["craft_items"] = sorted(ingredients["craft_items"])
             self._ingredients = ingredients
 
@@ -73,6 +76,17 @@ class Recipe(object):
         # object
         return {"craft_items": list(self._ingredients["craft_items"]),
                 "groups": list(self._ingredients["groups"])}
+
+    def sortable(self, update=False):
+        """Is this Recipe sortable?  Side effects may include caching the
+        result and _ingredients."""
+
+        if update or not hasattr(self, "_sortable"):
+            ingredients = self.ingredients(True)
+            self._sortable = self.craft_type != "shaped" and \
+                ingredients["groups"] == []
+
+        return self._sortable
 
     def conflicts(self, other):
         """Recipe detects conflicts with other Recipes"""
@@ -84,7 +98,6 @@ class Recipe(object):
                 return False
 
             return self._unshaped_match(other)
-
 
         raise NotImplementedError("Incomplete conflict resolution.  Dead.")
 
@@ -120,7 +133,8 @@ class Recipe(object):
         these = self.ingredients()
         those = other.ingredients()
         for item in these["craft_items"]:
-            found, remaining = self._cut_match(item, those["craft_items"], True)
+            found, remaining = self._cut_match(
+                item, those["craft_items"], True)
 
             if found:
                 those["craft_items"] = remaining
@@ -150,6 +164,7 @@ class Recipe(object):
             return False
 
         return those["craft_items"] == [] and those["groups"] == []
+
 
 class Craft(object):
     """A Craft is the combination of the CraftItem output of a Recipe, and the

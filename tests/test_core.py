@@ -53,6 +53,22 @@ class TestRecipe(unittest.TestCase):
             {"craft_items": ["default:pine_wood"],
              "groups": [self.metals, self.metals]})
 
+    def test_sortable(self):
+        """Recipes should know whether they can be sorted"""
+
+        # Shaped recipes are never sortable
+        r = Recipe([[self.metals], [None, "default:pine_wood"], [self.metals]])
+        self.assertFalse(r.sortable())
+        r = Recipe([["test:spoon"], ["test:cereal"], ["test:bowl"]])
+        self.assertFalse(r.sortable())
+
+        # unshaped recipes are sortable if their ingredients have no Groups
+        r = Recipe(["default:wood", self.metals, self.woods, "default:wood"],
+                   "unshaped")
+        self.assertFalse(r.sortable())
+        r = Recipe(["test:spoon", "test:cereal", "test:bowl"], "unshaped")
+        self.assertTrue(r.sortable())
+
     def test_single_item_recipe_conflics(self):
         """Recipes consisting of a single, unshaped Items can detect
         conflicts

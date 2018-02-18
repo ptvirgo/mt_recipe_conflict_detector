@@ -45,27 +45,27 @@ class TestHelpers(unittest.TestCase):
             merge, [["1","2"], ["3","4"], ["5","6","7"]], "x"),
             "x1234567")
 
-    def test_items_conflict(self):
+    def test_items_match(self):
         """We should detect potential item conflicts"""
         woods = {"default:pine_wood", "default:jungle_wood", "default:wood"}
         metals = {"default:steel_ingot", "default:bronze_ingot",
                    "default:gold_ingot"}
         everything = woods.union(metals)
 
-        self.assertTrue(helpers.items_conflict("default:steel_ingot",
+        self.assertTrue(helpers.items_match("default:steel_ingot",
                                                "default:steel_ingot"))
-        self.assertFalse(helpers.items_conflict("default:steel_ingot",
+        self.assertFalse(helpers.items_match("default:steel_ingot",
                                                 "default:bronze_ingot"))
         
-        self.assertTrue(helpers.items_conflict("default:steel_ingot", metals))
-        self.assertTrue(helpers.items_conflict(metals, "default:steel_ingot"))
+        self.assertTrue(helpers.items_match("default:steel_ingot", metals))
+        self.assertTrue(helpers.items_match(metals, "default:steel_ingot"))
 
-        self.assertFalse(helpers.items_conflict("default:steel_ingot", woods))
-        self.assertFalse(helpers.items_conflict(woods, "default:steel_ingot"))
+        self.assertFalse(helpers.items_match("default:steel_ingot", woods))
+        self.assertFalse(helpers.items_match(woods, "default:steel_ingot"))
 
-        self.assertTrue(helpers.items_conflict(woods, woods))
-        self.assertFalse(helpers.items_conflict(metals, woods))
-        self.assertFalse(helpers.items_conflict(everything, metals))
+        self.assertTrue(helpers.items_match(woods, woods))
+        self.assertFalse(helpers.items_match(metals, woods))
+        self.assertFalse(helpers.items_match(everything, metals))
 
 if __name__ == "__main__":
     unittest.main()

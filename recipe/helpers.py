@@ -39,14 +39,14 @@ def reduce_recipe_collection(f, item, initial):
     return value
 
 
-def items_conflict(a, b):
-    """Return True if the provided CraftItems conflict"""
+def items_match(a, b):
+    """Return True if the provided CraftItems match"""
 
     if type(a) is type(b):
         return a == b
 
     if type(a) is set:
-        return items_conflict(b, a)
+        return items_match(b, a)
 
     if a in b:
         return True

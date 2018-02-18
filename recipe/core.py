@@ -51,35 +51,52 @@ class Recipe(object):
         self.craft_type = craft_type
         self.items = recipe_collection
 
-    def _validate_collection(self, collection):
-        """Return the recipe collection if valid, raise a ValueError
-        otherwise
+    def ingredients(self, update=False):
+        """Return a flat list of the Items (excluding None) for this Recipe.
+        As side effect, stores the ingredient list if it has not already been
+stored or if the update argument is True
         """
+        if update or not hasattr(self, "_ingredients"):
+            self._ingredients = helpers.reduce_recipe_collection(
+                (lambda a, b: a + [b]), self.items, [])
 
-        def validate_craftitem_name(x):
-            """Validate a single CraftItem string"""
-            if x == "": return
+        return list(self._ingredients)
 
-            if x[:6] == "group:":
-                raise ValueError("Groupname '%s' shoud have been a Group (set)"
-                                 % (x,))
-            return x
+    def conflicts(self, other):
+        """Recipe detects conflicts with other Recipes"""
 
-        def validator(x):
-            """Validate a single Item"""
+        def cut_match(item, collection):
+            """If an Item can be matched in a collection of Items, return the 
+            collection minus the first match.  Return false if the item can't be
+            matched.
+            """
+            for i in range(len(collection)):
+                if helpers.items_match(item, collection[i]):
+                    return collection[:i] + collection[i+1:]
+            return False
 
-            if x is None:
-                return
+        # usually, craft types must match in order to conflict
+        if self.craft_type != "shaped" and other.craft_type != "shaped":
 
-            if type(x) is set:
+            if self.craft_type != other.craft_type:
+                return False
 
-                for s in x:
-                    if validate_craftitem_name(s) is None:
-                        raise ValueError("Groups cannot include empty CraftItem")
-                return x
+            these_items = self.ingredients()
+            those_items = other.ingredients()
 
-            if type(x) is str:
-                return validate_craftitem_name(x)
+            for item in these_items:
+                those_items = cut_match(item, those_items)
+
+                if those_items is False:
+                    return False
+
+            return those_items == []
+
+        raise NotImplementedError("Incomplete conflict resolution.  Dead.")
+
+    def unshaped_conflict(self, other):
+        """Detect conflicts for Recipes without shape restrictions"""
+        
 
 class Craft(object):
     """A Craft is the combination of the CraftItem output of a Recipe, and the

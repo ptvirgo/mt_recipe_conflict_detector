@@ -52,28 +52,30 @@ class Recipe(object):
         self.items = recipe_collection
 
     def ingredients(self, update=False):
-        """Return a flat list of the Items (excluding None) for this Recipe.
-        As side effect, stores the ingredient list if it has not already been
-stored or if the update argument is True
-        """
-        if update or not hasattr(self, "_ingredients"):
-            self._ingredients = helpers.reduce_recipe_collection(
-                (lambda a, b: a + [b]), self.items, [])
+        """Return a flat list of the Items (excluding None) for this Recipe."""
+        def redux(base, item):
 
-        return list(self._ingredients)
+            if type(item) is set:
+                base["groups"].append(item)
+                return base
+
+            if type(item) is str:
+                base["craft_items"].append(item)
+                return base
+
+        if update or not hasattr(self, "_ingredients"):
+            ingredients = helpers.reduce_recipe_collection(
+                    redux, self.items, {"craft_items": [], "groups": []})
+            ingredients["craft_items"] = sorted(ingredients["craft_items"])
+            self._ingredients = ingredients
+
+        # Returning a fresh dict in order to prevent mutation of the cached
+        # object
+        return {"craft_items": list(self._ingredients["craft_items"]),
+                "groups": list(self._ingredients["groups"])}
 
     def conflicts(self, other):
         """Recipe detects conflicts with other Recipes"""
-
-        def cut_match(item, collection):
-            """If an Item can be matched in a collection of Items, return the 
-            collection minus the first match.  Return false if the item can't be
-            matched.
-            """
-            for i in range(len(collection)):
-                if helpers.items_match(item, collection[i]):
-                    return collection[:i] + collection[i+1:]
-            return False
 
         # usually, craft types must match in order to conflict
         if self.craft_type != "shaped" and other.craft_type != "shaped":
@@ -81,22 +83,73 @@ stored or if the update argument is True
             if self.craft_type != other.craft_type:
                 return False
 
-            these_items = self.ingredients()
-            those_items = other.ingredients()
+            return self._unshaped_match(other)
 
-            for item in these_items:
-                those_items = cut_match(item, those_items)
-
-                if those_items is False:
-                    return False
-
-            return those_items == []
 
         raise NotImplementedError("Incomplete conflict resolution.  Dead.")
 
-    def unshaped_conflict(self, other):
-        """Detect conflicts for Recipes without shape restrictions"""
-        
+    @staticmethod
+    def _cut_match(item, collection, sorted_collection=False):
+        """Cut a given Item from a collection of Items.
+        parameters:
+            item - the Item to be cut
+            collection - list of Items
+            sorted_collection - bool indicating where a (possibly) more
+                efficient search on an ordered list is appropriate
+        returns:
+            Bool indicating success, remains of the collection (unaltered if
+            no match)
+        """
+        i = 0
+        end = len(collection)
+
+        while i < end:
+            if helpers.items_match(item, collection[i]):
+                return (True, collection[:i] + collection[i+1:])
+            if sorted_collection and item > collection[i]:
+                return (False, collection)
+            i += 1
+
+        return (False, collection)
+
+    def _unshaped_match(self, other):
+        """Given another Recipe, return a bool describing whether this and the
+        other are effectively the same, discounting Item order and empty Items
+        """
+
+        these = self.ingredients()
+        those = other.ingredients()
+        for item in these["craft_items"]:
+            found, remaining = self._cut_match(item, those["craft_items"], True)
+
+            if found:
+                those["craft_items"] = remaining
+                continue
+
+            found, remaining = self._cut_match(item, those["groups"])
+
+            if found:
+                those["groups"] = remaining
+                continue
+
+            return False
+
+        for item in these["groups"]:
+            found, remaining = self._cut_match(item, those["craft_items"])
+
+            if found:
+                those["craft_items"] = remaining
+                continue
+
+            found, remaining = self._cut_match(item, those["groups"])
+
+            if found:
+                those["groups"] = remaining
+                continue
+
+            return False
+
+        return those["craft_items"] == [] and those["groups"] == []
 
 class Craft(object):
     """A Craft is the combination of the CraftItem output of a Recipe, and the

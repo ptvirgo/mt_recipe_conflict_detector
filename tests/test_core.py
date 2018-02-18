@@ -35,18 +35,23 @@ class TestRecipe(unittest.TestCase):
     def test_ingredients(self):
         """Recipes can return a dict describing their ingredients"""
         r = Recipe(self.woods, "fuel")
-        self.assertEqual(r.ingredients(), [self.woods])
+        self.assertEqual(
+            r.ingredients(),
+            {"craft_items": [],
+             "groups": [self.woods]})
 
         r = Recipe(["default:wood", self.metals, self.woods, "default:wood"],
                    "unshaped")
         self.assertEqual(
             r.ingredients(),
-            ["default:wood", self.metals, self.woods, "default:wood"])
+            {"craft_items": ["default:wood", "default:wood"],
+             "groups": [self.metals, self.woods]})
 
         r = Recipe([[self.metals], [None, "default:pine_wood"], [self.metals]])
         self.assertEqual(
             r.ingredients(),
-            [self.metals, "default:pine_wood", self.metals])
+            {"craft_items": ["default:pine_wood"],
+             "groups": [self.metals, self.metals]})
 
     def test_single_item_recipe_conflics(self):
         """Recipes consisting of a single, unshaped Items can detect

@@ -3,42 +3,69 @@
 
 import unittest
 from recipe import helpers
-from recipe.item import CraftItem, Group
 
 
 class TestHelpers(unittest.TestCase):
-    """Recipe checker helper function unit tests"""
+    """Test the helper functions"""
 
-    def test_craft_or_group_makes_groups(self):
-        """String describing a group should return a Group"""
+    def test_item_name(self):
+        """Item names should have initial colons stripped"""
+        self.assertEqual(helpers.item_name("default:steel_ingot"),
+                         "default:steel_ingot")
 
-        group = helpers.item_or_group("group:wood")
-        self.assertIsInstance(group, Group)
-        self.assertEqual(group.name, "wood")
+        self.assertEqual(helpers.item_name(":default:steel_ingot"),
+                         "default:steel_ingot")
 
-    def test_craft_or_group_makes_crafts(self):
-        """String describing a craft item should return a CraftItem"""
+    def test_collection_map(self):
+        """Mapping over the typical RecipeCollection structure works as
+        expected.
+        """
+        self.assertEqual(helpers.map_recipe_collection(int, "1"), 1)
+        self.assertEqual(helpers.map_recipe_collection(int, ["1", "2", "3"]),
+                         [1, 2, 3])
+        self.assertEqual(
+            helpers.map_recipe_collection(int, [["1", "2"], ["3"]]),
+            [[1, 2], [3]])
 
-        craft_item = helpers.item_or_group("default:diamond")
-        self.assertIsInstance(craft_item, CraftItem)
-        self.assertEqual(craft_item.name, "default:diamond")
+    def test_collection_reduce(self):
+        """Reducing typical RecipeCollection works as expected."""
 
+        def merge(a, b):
+            return a + b
 
-    def test_names_to_items(self):
-        """names_to_items can produce recipe item collections"""
+        self.assertEqual(helpers.reduce_recipe_collection(
+            merge, "default:wood", "x"),
+            "xdefault:wood")
 
-        self.assertEqual(helpers.names_to_items("default:wood"),
-                         [[CraftItem("default:wood")]])
+        self.assertEqual(helpers.reduce_recipe_collection(
+            merge, ["default:wood", "test:bowl"], "x"),
+            "xdefault:woodtest:bowl")
 
-        self.assertEqual(helpers.names_to_items(
-            ["default:steel_ingot",
-             "default:bronze_ingot",
-             "default:gold_ingot"]),
-            [[CraftItem("default:steel_ingot"),
-              CraftItem("default:bronze_ingot"),
-              CraftItem("default:gold_ingot")]])
+        self.assertEqual(helpers.reduce_recipe_collection(
+            merge, [["1","2"], ["3","4"], ["5","6","7"]], "x"),
+            "x1234567")
 
+    def test_items_conflict(self):
+        """We should detect potential item conflicts"""
+        woods = {"default:pine_wood", "default:jungle_wood", "default:wood"}
+        metals = {"default:steel_ingot", "default:bronze_ingot",
+                   "default:gold_ingot"}
+        everything = woods.union(metals)
 
+        self.assertTrue(helpers.items_conflict("default:steel_ingot",
+                                               "default:steel_ingot"))
+        self.assertFalse(helpers.items_conflict("default:steel_ingot",
+                                                "default:bronze_ingot"))
+        
+        self.assertTrue(helpers.items_conflict("default:steel_ingot", metals))
+        self.assertTrue(helpers.items_conflict(metals, "default:steel_ingot"))
+
+        self.assertFalse(helpers.items_conflict("default:steel_ingot", woods))
+        self.assertFalse(helpers.items_conflict(woods, "default:steel_ingot"))
+
+        self.assertTrue(helpers.items_conflict(woods, woods))
+        self.assertFalse(helpers.items_conflict(metals, woods))
+        self.assertFalse(helpers.items_conflict(everything, metals))
 
 if __name__ == "__main__":
     unittest.main()

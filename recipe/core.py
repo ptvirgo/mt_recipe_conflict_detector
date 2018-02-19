@@ -58,6 +58,9 @@ class Recipe(object):
         """
         def redux(base, item):
 
+            if item is None:
+                return base
+
             if type(item) is set:
                 base["groups"].append(item)
                 return base

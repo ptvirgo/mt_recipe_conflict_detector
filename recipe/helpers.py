@@ -13,8 +13,6 @@ def map_recipe_collection(f, item):
     """Provides a recursive map function that can cover the expected
     RecipeCollection structure
     """
-    if item is None:
-        return
 
     if type(item) is not list:
         return f(item)
@@ -26,8 +24,6 @@ def reduce_recipe_collection(f, item, initial):
     """Provides a reduce (fold) function that can cover the expected
     RecipeCollection structure
     """
-    if item is None:
-        return initial
 
     if type(item) is not list:
         return f(initial, item)

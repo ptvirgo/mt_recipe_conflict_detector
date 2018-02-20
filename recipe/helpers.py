@@ -44,5 +44,7 @@ def items_match(a, b):
     if type(a) is set:
         return items_match(b, a)
 
-    if a in b:
-        return True
+    if type(a) is str and type(b) is set:
+        return a in b
+
+    return False

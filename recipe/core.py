@@ -94,15 +94,18 @@ class Recipe(object):
     def conflicts(self, other):
         """Recipe detects conflicts with other Recipes"""
 
-        # usually, craft types must match in order to conflict
         if self.craft_type != "shaped" and other.craft_type != "shaped":
-
-            if self.craft_type != other.craft_type:
+            # usually, craft types must match in order to conflict
+            if self.craft_type == other.craft_type:
+                return self._unshaped_match(other)
+            else:
                 return False
 
-            return self._unshaped_match(other)
+        elif self.craft_type == "shaped" and other.craft_type == "shaped":
+            return self._shaped_match(other)
 
-        raise NotImplementedError("Incomplete conflict resolution.  Dead.")
+        else:
+            return self._unshaped_match(other)
 
     @staticmethod
     def _cut_match(item, collection, sorted_collection=False):
@@ -167,6 +170,90 @@ class Recipe(object):
             return False
 
         return those["craft_items"] == [] and those["groups"] == []
+
+    def _shaped_match(self, other):
+        """Given another shaped Recipe, return a bool indicating whether this
+        and the other conflict.
+        """
+        these, those = self._normalize(self.items, other.items)
+
+        i = 0
+        j = 0
+        for i in range(len(these)):
+            for j in range(len(these[i])):
+                if not helpers.items_match(these[i][j], those[i][j]):
+                    return False
+        return True
+
+    @staticmethod
+    def _normalize(a, b):
+        """Given two shaped item lists, return variations filled out with None
+        as needed to match size and preserve possible matching
+        """
+
+        # Let's not mutate item lists
+        items1 = list(a)
+        items2 = list(b)
+
+        def height(items):
+            return len(items)
+
+        def width(items):
+            return max([len(row) for row in items])
+
+        def get_top_offset(items):
+            i = 0
+
+            while i < height(items):
+                for item in items[i]:
+                    if item is not None:
+                        return i
+                i += 1
+            return i
+
+        def get_left_offset(items):
+            i = 0
+
+            while i < width(items):
+                for row in items:
+                    if row[i] is not None:
+                        return i
+                i += 1
+            return i
+
+        def fill_height(total, offset, items):
+            new_row = [[None] * width(items)]
+
+            while height(items) < total:
+                if offset > 0:
+                    items = new_row + items
+                    offset -= 1
+                else:
+                    items = items + new_row
+
+            return items
+
+        def fill_width(total, offset, items):
+            h = height(items)
+
+            for i in range(h):
+                missing = total - len(items[i])
+                prefix = min(missing, offset)
+                postfix = missing - prefix
+                items[i] = [None] * prefix + items[i] + [None] * postfix
+
+            return items
+
+        expected_height = max(height(items1), height(items2))
+        expected_width = max(width(items1), width(items2))
+
+        items1 = fill_height(expected_height, get_top_offset(items2), items1)
+        items1 = fill_width(expected_width, get_left_offset(items2), items1)
+
+        items2 = fill_height(expected_height, get_top_offset(items1), items2)
+        items2 = fill_width(expected_width, get_left_offset(items1), items2)
+
+        return items1, items2
 
 
 class Craft(object):

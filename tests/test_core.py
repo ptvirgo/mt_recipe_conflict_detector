@@ -105,7 +105,6 @@ class TestRecipe(unittest.TestCase):
         self.assertFalse(r3.conflicts(r1))
         self.assertFalse(r1.conflicts(r3))
 
-
     def test_identically_shaped_conflicts(self):
         """Shaped recipes with identical shapes can detect conflicts"""
 
@@ -118,9 +117,9 @@ class TestRecipe(unittest.TestCase):
              ["default:pine_wood", None, "default:pine_wood"],
              ["default:pine_wood", "default:pine_wood", "default:pine_wood"]])
         woods_chest = Recipe(
-             [[self.woods, self.woods, self.woods],
-              [self.woods, None, self.woods],
-              [self.woods, self.woods, self.woods]])
+            [[self.woods, self.woods, self.woods],
+             [self.woods, None, self.woods],
+             [self.woods, self.woods, self.woods]])
 
         self.assertTrue(default_wood_chest.conflicts(default_wood_chest))
         self.assertFalse(default_wood_chest.conflicts(pine_wood_chest))
@@ -146,7 +145,6 @@ class TestRecipe(unittest.TestCase):
         self.assertTrue(woods_slab.conflicts(sinking_pine))
         self.assertFalse(sinking_pine.conflicts(floating_pine))
 
-
     def test_floating_cube_shape_conflicts(self):
         """Cubes with inexact locations can detect conflicts"""
 
@@ -164,6 +162,12 @@ class TestRecipe(unittest.TestCase):
         not_even = Recipe([[self.metals, self.metals],
                            [self.metals]])
 
+        even = Recipe([[self.metals, self.metals],
+                       [self.metals, None]])
+
+        unmatched_even = Recipe([[self.metals, self.metals],
+                                 [None, self.metals]])
+
         self.assertTrue(metal_box.conflicts(metal_box))
         self.assertTrue(metal_box.conflicts(metal_corner1))
         self.assertTrue(metal_box.conflicts(metal_corner2))
@@ -172,13 +176,15 @@ class TestRecipe(unittest.TestCase):
         self.assertFalse(metal_corner1.conflicts(not_even))
 
         self.assertTrue(not_even.conflicts(not_even))
+        self.assertTrue(not_even.conflicts(even))
+        self.assertFalse(not_even.conflicts(unmatched_even))
 
     def test_altered_shapes_dont_conflict(self):
         """Same ingredients, different shape don't conflict"""
         left = Recipe([["default:wood", "default:iron_ingot"]])
         right = Recipe([["default:iron_ingot", "default:wood"]])
-        up = Recipe([["default:iron_ingot"],["default:wood"]])
-        down = Recipe([["default:wood"],["default:iron_ingot"]])
+        up = Recipe([["default:iron_ingot"], ["default:wood"]])
+        down = Recipe([["default:wood"], ["default:iron_ingot"]])
 
         self.assertTrue(left.conflicts(left))
         self.assertFalse(left.conflicts(right))
@@ -189,6 +195,57 @@ class TestRecipe(unittest.TestCase):
         self.assertFalse(up.conflicts(down))
         self.assertFalse(up.conflicts(left))
         self.assertFalse(up.conflicts(right))
+
+    def test_vertical_shapes(self):
+        """Matches on vertical shapes should work"""
+        vertical = Recipe([["test:thing"], ["test:thing"], ["test:thing"]])
+
+        leftical = Recipe([[None, "test:thing"],
+                           [None, "test:thing"],
+                           [None, "test:thing"]])
+        rightical = Recipe([["test:thing", None],
+                            ["test:thing", None],
+                            ["test:thing", None]])
+
+        further = Recipe([["test:thing", None, None],
+                          ["test:thing", None, None],
+                          ["test:thing", None, None]])
+
+        self.assertTrue(vertical.conflicts(vertical))
+        self.assertTrue(vertical.conflicts(leftical))
+        self.assertTrue(vertical.conflicts(rightical))
+        self.assertTrue(vertical.conflicts(further))
+
+        self.assertFalse(leftical.conflicts(rightical))
+        self.assertFalse(leftical.conflicts(further))
+        self.assertTrue(rightical.conflicts(further))
+
+    def test_normalize_shapes(self):
+        """Fill out shaped Recipes of different sizes to compare, if needed"""
+
+        metal_box = Recipe([[self.metals, self.metals],
+                            [self.metals, self.metals]])
+
+        metal_corner1 = Recipe([[None, self.metals, self.metals],
+                                [None, self.metals, self.metals],
+                                [None, None, None]])
+
+        metal_corner2 = Recipe([[None, None, None],
+                                [self.metals, self.metals, None],
+                                [self.metals, self.metals, None]])
+
+        a, b = Recipe._normalize(metal_box.items, metal_corner1.items)
+        self.assertEqual(a, b)
+        self.assertEqual(metal_corner1.items, a)
+
+        a, b = Recipe._normalize(metal_corner2.items, metal_box.items)
+        self.assertEqual(a, b)
+        self.assertEqual(metal_corner2.items, a)
+
+        a, b = Recipe._normalize(metal_corner1.items, metal_corner2.items)
+        self.assertNotEqual(a, b)
+        self.assertEqual(a, metal_corner1.items)
+        self.assertEqual(b, metal_corner2.items)
 
 if __name__ == "__main__":
     unittest.main()

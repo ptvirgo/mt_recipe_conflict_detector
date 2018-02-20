@@ -105,5 +105,90 @@ class TestRecipe(unittest.TestCase):
         self.assertFalse(r3.conflicts(r1))
         self.assertFalse(r1.conflicts(r3))
 
+
+    def test_identically_shaped_conflicts(self):
+        """Shaped recipes with identical shapes can detect conflicts"""
+
+        default_wood_chest = Recipe(
+            [["default:wood", "default:wood", "default:wood"],
+             ["default:wood", None, "default:wood"],
+             ["default:wood", "default:wood", "default:wood"]])
+        pine_wood_chest = Recipe(
+            [["default:pine_wood", "default:pine_wood", "default:pine_wood"],
+             ["default:pine_wood", None, "default:pine_wood"],
+             ["default:pine_wood", "default:pine_wood", "default:pine_wood"]])
+        woods_chest = Recipe(
+             [[self.woods, self.woods, self.woods],
+              [self.woods, None, self.woods],
+              [self.woods, self.woods, self.woods]])
+
+        self.assertTrue(default_wood_chest.conflicts(default_wood_chest))
+        self.assertFalse(default_wood_chest.conflicts(pine_wood_chest))
+        self.assertTrue(default_wood_chest.conflicts(woods_chest))
+
+    def test_floating_slab_shape_conflicts(self):
+        """Slab shaped recipes with inexact locations can detect conflicts"""
+
+        woods_slab = Recipe([[self.woods, self.woods, self.woods]])
+
+        floating_pine = Recipe([["default:pine_wood",
+                                 "default:pine_wood",
+                                 "default:pine_wood"],
+                                [None, None, None],
+                                [None, None, None]])
+        sinking_pine = Recipe([[None, None, None],
+                               [None, None, None],
+                               ["default:pine_wood",
+                                "default:pine_wood",
+                                "default:pine_wood"]])
+
+        self.assertTrue(woods_slab.conflicts(floating_pine))
+        self.assertTrue(woods_slab.conflicts(sinking_pine))
+        self.assertFalse(sinking_pine.conflicts(floating_pine))
+
+
+    def test_floating_cube_shape_conflicts(self):
+        """Cubes with inexact locations can detect conflicts"""
+
+        metal_box = Recipe([[self.metals, self.metals],
+                            [self.metals, self.metals]])
+
+        metal_corner1 = Recipe([[None, self.metals, self.metals],
+                                [None, self.metals, self.metals],
+                                [None, None, None]])
+
+        metal_corner2 = Recipe([[None, None, None],
+                                [self.metals, self.metals, None],
+                                [self.metals, self.metals, None]])
+
+        not_even = Recipe([[self.metals, self.metals],
+                           [self.metals]])
+
+        self.assertTrue(metal_box.conflicts(metal_box))
+        self.assertTrue(metal_box.conflicts(metal_corner1))
+        self.assertTrue(metal_box.conflicts(metal_corner2))
+        self.assertFalse(metal_box.conflicts(not_even))
+        self.assertFalse(metal_corner1.conflicts(metal_corner2))
+        self.assertFalse(metal_corner1.conflicts(not_even))
+
+        self.assertTrue(not_even.conflicts(not_even))
+
+    def test_altered_shapes_dont_conflict(self):
+        """Same ingredients, different shape don't conflict"""
+        left = Recipe([["default:wood", "default:iron_ingot"]])
+        right = Recipe([["default:iron_ingot", "default:wood"]])
+        up = Recipe([["default:iron_ingot"],["default:wood"]])
+        down = Recipe([["default:wood"],["default:iron_ingot"]])
+
+        self.assertTrue(left.conflicts(left))
+        self.assertFalse(left.conflicts(right))
+        self.assertFalse(left.conflicts(up))
+        self.assertFalse(left.conflicts(down))
+
+        self.assertTrue(up.conflicts(up))
+        self.assertFalse(up.conflicts(down))
+        self.assertFalse(up.conflicts(left))
+        self.assertFalse(up.conflicts(right))
+
 if __name__ == "__main__":
     unittest.main()

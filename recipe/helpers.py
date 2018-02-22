@@ -8,6 +8,16 @@ def item_name(name):
     else:
         return name
 
+def group_name(name):
+    """Group names may require adjustment"""
+
+    if name[:6] == "group:":
+        newname = name[6:]
+    else:
+        newname = name
+
+    return newname.split(":")[-1].split(",")[0]
+
 
 def map_recipe_collection(f, item):
     """Provides a recursive map function that can cover the expected

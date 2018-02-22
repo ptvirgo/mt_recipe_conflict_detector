@@ -265,7 +265,7 @@ the outputs allows that equality for Recipes is not dependent on equality of
 Craft outputs.
     """
 
-    def __init__(self, output, recipe):
+    def __init__(self, recipe, output):
 
         if type(output) is not str:
             raise ValueError("output must be a str")

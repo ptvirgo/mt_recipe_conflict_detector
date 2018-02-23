@@ -4,11 +4,11 @@
 from setuptools import setup
 
 setup(
-    name="MinetestRecipe",
+    name="Minetest Crafting Recipe",
     description="Minetest recipe conflict detector",
     author="Pablo Virgo",
     author_email="mailbox@pablovirgo.com",
-    version="0.1.0",
-    packages=["recipe"],
+    version="0.1.1",
+    packages=["mt_crafting_recipe"],
     scripts=["scripts/detect_conflicts.py"] 
 )

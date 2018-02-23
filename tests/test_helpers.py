@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import unittest
-from recipe import helpers
+from mt_crafting_recipe import helpers
 
 
 class TestHelpers(unittest.TestCase):

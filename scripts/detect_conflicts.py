@@ -5,7 +5,7 @@ import argparse
 import json
 import warnings
 
-from recipe import Recipe, Craft, helpers
+from mt_crafting_recipe import Recipe, Craft, helpers
 
 
 def detect_conflicts(filename):

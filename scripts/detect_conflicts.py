@@ -17,7 +17,6 @@ def detect_conflicts(filename):
     recipe_collection = get_recipes(groups, data["recipes"])
     
     for c in recipe_collection.keys():
-        # Detect sortable conflicts
         sortables = recipe_collection[c]["sortable"]
         sortable_len = len(sortables)
         unsortables = recipe_collection[c]["unsortable"]
@@ -85,12 +84,15 @@ def get_recipes(groups, recipe_data):
     """
     recipes = {}
     for r in recipe_data:
-        craft = data_to_recipe(groups, r)
+        craft = data_to_craft(groups, r)
 
         if craft is None:
             continue
 
-        craft_type = craft.recipe.craft_type
+        if craft.recipe.craft_type in ["shaped", "shapeless"]:
+            craft_type = "craft_grid"
+        else:
+            craft_type = craft.recipe.craft_type
 
         if not craft_type in recipes:
             recipes[craft_type] = \
@@ -108,7 +110,7 @@ def get_recipes(groups, recipe_data):
 
     return recipes
 
-def data_to_recipe(groups, data):
+def data_to_craft(groups, data):
     """Convert the data about a specific recipe into a Craft, or None
     """
     def item_or_group(text):
@@ -121,9 +123,6 @@ def data_to_recipe(groups, data):
             try:
                 group = groups[group_name]
             except KeyError as err:
-                # warnings.warn(
-                #     "Missing group {}, needed by {}".format(
-                #         group_name, data["output"]))
                 return "empty_group:{}".format(group_name)
 
             return group
@@ -146,7 +145,7 @@ def data_to_recipe(groups, data):
     else:
         recipe = Recipe(collection)
 
-    craft = Craft(recipe, data["output"])
+    craft = Craft(recipe, helpers.item_name(data["output"]))
     return craft
 
 def main():

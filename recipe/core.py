@@ -30,7 +30,7 @@ A RecipeCollection may be:
 
 A CraftType is a string representing the "kind" of a given Recipe, per the
 Minetest game.
-"shaped", "unshaped", "fuel", and "cooking" are standard.
+"shaped", "shapeless", "fuel", and "cooking" are standard.
 "shaped" is the default.
 Other CraftType strings may be introduced by Minetest mods.
 
@@ -97,7 +97,7 @@ class Recipe(object):
         if self.craft_type != "shaped" and other.craft_type != "shaped":
             # usually, craft types must match in order to conflict
             if self.craft_type == other.craft_type:
-                return self._unshaped_match(other)
+                return self._shapeless_match(other)
             else:
                 return False
 
@@ -105,7 +105,7 @@ class Recipe(object):
             return self._shaped_match(other)
 
         else:
-            return self._unshaped_match(other)
+            return self._shapeless_match(other)
 
     @staticmethod
     def _cut_match(item, collection, sorted_collection=False):
@@ -131,7 +131,7 @@ class Recipe(object):
 
         return (False, collection)
 
-    def _unshaped_match(self, other):
+    def _shapeless_match(self, other):
         """Given another Recipe, return a bool describing whether this and the
         other are effectively the same, discounting Item order and empty Items
         """

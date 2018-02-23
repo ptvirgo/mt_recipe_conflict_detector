@@ -16,6 +16,9 @@ class TestHelpers(unittest.TestCase):
         self.assertEqual(helpers.item_name(":default:steel_ingot"),
                          "default:steel_ingot")
 
+        self.assertEqual(helpers.item_name("default:coal 9"),
+                         "default:coal")
+
     def test_collection_map(self):
         """Mapping over the typical RecipeCollection structure works as
         expected.

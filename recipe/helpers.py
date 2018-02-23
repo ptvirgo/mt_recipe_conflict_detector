@@ -4,9 +4,8 @@
 def item_name(name):
     """Item names may lead with colons.  Drop 'em"""
     if name[0] == ":":
-        return name[1:]
-    else:
-        return name
+        name = name[1:]
+    return name.split(" ")[0]
 
 def group_name(name):
     """Group names may require adjustment"""
@@ -16,7 +15,7 @@ def group_name(name):
     else:
         newname = name
 
-    return newname.split(":")[-1].split(",")[0]
+    return newname.split(":")[-1]
 
 
 def map_recipe_collection(f, item):

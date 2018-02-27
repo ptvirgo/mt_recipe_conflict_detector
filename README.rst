@@ -1,7 +1,7 @@
 Minetest Craft Recipe Conflict Detector
 ----------------------------------------
 
-Minetest_ https://www.minetest.net/ mods sometimes define the same craft
+Minetest_ mods sometimes define the same craft
 recipe for different items.  If conflicting recipes are installed on the same
 server, some game items will be impossible to craft.  Minetest administrators
 can use the detector to identify conflicts, making it easy to reconcile them

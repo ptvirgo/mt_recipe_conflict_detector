@@ -1,43 +1,4 @@
 # -*- coding: utf-8 -*-
-"""Lingo / Data definitions
-
-A CraftItem is a string representation of a single, specific item as can be
-used in the Minetest inventory or craft table.
-None or an empty string can represent a CraftItem
-Validators should convert empty strings to None
-CraftItems may appear with a leading ":", which should be removed for our
-purposes.
-
-Examples: "default:steel_ingot" or "default:diamond"
-
-A GroupName is a string representation of a named collection of Minetest
-Craftitems.
-The string must lead with the characters "group:"
-Examples: "group:stick" or "group:wood"
-
-A Group is a python set of CraftItems
-Groups should not contain the empty string or None
-Groups should reflect the set of Items expected per their related GroupName
-Example: {"default:steel_ingot, "default:diamond"}
-
-An Item can be a CraftItem, Group, or None. It may not be GroupName.
-
-A RecipeCollection may be:
-    - an Item
-    - a list of up to 9 Items
-    - a list containing up to 3 lists of up to 3 items, ie:
-      [[Item, Item, Item], [Item, Item, Item], [Item, Item, Item]]
-
-A CraftType is a string representing the "kind" of a given Recipe, per the
-Minetest game.
-"shaped", "shapeless", "fuel", and "cooking" are standard.
-"shaped" is the default.
-Other CraftType strings may be introduced by Minetest mods.
-
-Objects
--------
-"""
-
 from . import helpers
 
 

@@ -1,19 +1,20 @@
-Minetest Craft Recipe Conflict Detector
+Ginetest Craft Recipe Conflict Detector
 ----------------------------------------
 
 
-[Minetest](https://www.minetest.net/) mods sometimes define the same craft
+Minetest_ https://www.minetest.net/ mods sometimes define the same craft
 recipe for different items.  If conflicting recipes are installed on the same
 server, some game items will be impossible to craft.  Minetest administrators
 can use the detector to identify conflicts, making it easy to reconcile them
 before players are affected.
 
+.. _Minetest: https://www.minetest.net/
+
 This is a command line tool intended for server administrators.  In order to use
 it, as well as to do anything with the information in provides, you'll need to
 be:
 
-1. Comfortable understanding and running commands in the
-terminal.
+1. Comfortable understanding and running commands in the terminal.
 2. Prepared to edit plain-text and Minetest recipe code files as needed.
 
 Setup
@@ -48,12 +49,13 @@ Running
 -------
 
 - Activate the **recipe_export** mod along with any mods you wish to detect
-conflicts for to a Minetest world: named *MyWorld* for this example.
+  conflicts for to a Minetest world: named *MyWorld* for this example.
 - Start up the Minetest game with your demo world to load the recipes.
 - Shut down the game to export them.
 - Run 
 
 .. code:: bash
+
     vex minetest_recipe scripts/detect_conflicts.py ~/.minetest/worlds/MyWorld/recipe_export.json
 
 
@@ -66,6 +68,7 @@ conflicts.
 More likely, you'll see a list of conflicts similar to this sample:
 
 ::
+
     katanas:katana_wood conflicts with katanas:umad_bro
     default:furnace conflicts with xdecor:stone_rune
     "gates_wooden:classic" conflicts with doors:gate_wood_closed

@@ -1,6 +1,5 @@
-Ginetest Craft Recipe Conflict Detector
+Minetest Craft Recipe Conflict Detector
 ----------------------------------------
-
 
 Minetest_ https://www.minetest.net/ mods sometimes define the same craft
 recipe for different items.  If conflicting recipes are installed on the same
@@ -19,7 +18,6 @@ be:
 
 Setup
 -----
-
 
 Linux (should be similar for Mac)
 =================================
@@ -44,7 +42,6 @@ Windows
 I haven't used Windows in over 15 years; if someone wants to sort these out I'm
 willing to add instructions here.
 
-
 Running
 -------
 
@@ -57,7 +54,6 @@ Running
 .. code:: bash
 
     vex minetest_recipe scripts/detect_conflicts.py ~/.minetest/worlds/MyWorld/recipe_export.json
-
 
 Results
 =======
